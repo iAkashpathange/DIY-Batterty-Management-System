@@ -12,24 +12,49 @@
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-void setup() {
-  Serial.begin(115200);
+//voltage sensor
+int analogInput = A1; // Assign A1 for voltage reading
+float vout = 0.0;
+float vin = 0.0;
+float R1 = 30000.0; // Value of resistor 
+float R2 = 8050.0; //  Value of resistor
+int value = 0;
 
-  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // Address 0x3D for 128x64
+void setup() 
+{
+  //volatge
+   pinMode(analogInput, INPUT);
+   Serial.begin(115200); //serial monitoring
+   Serial.print("DC VOLTMETER\n");
+   
+  //oled
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))  // Address 0x3D for 128x64
+  {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;);
   }
   delay(2000);
-  display.clearDisplay();
-
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 10);
-  // Display static text
-  display.println("Hello, world!");
-  display.display(); 
 }
 
-void loop() {
+void loop() 
+{
+  //calculation and read the value at analog input
+  value = analogRead(analogInput);
+  vout = (value * 5.0) / 1024.0; // see text
+  vin = vout / (R2/(R1+R2)); 
   
+  Serial.print("INPUT V= "); //serial monitoring
+  Serial.println(vin,3);
+  delay(500);
+
+  display.clearDisplay(); // clear buffer
+
+  //voltage reading
+  display.setTextSize(1);             
+  display.setTextColor(WHITE);        
+  display.setCursor(0,10); 
+  display.write(4);    // ASCII Symbol Ex: 4 = Diamond symbol          
+  display.print("volatge = ");  display.print(vin, 4); display.print("v");
+  display.display();
+  delay(500); 
 }
